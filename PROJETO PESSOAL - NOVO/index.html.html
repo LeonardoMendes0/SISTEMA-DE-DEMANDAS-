@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Demandas - Humanização</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --azul-principal: #1E4E9D;
+            --azul-claro: #4A7CDF;
+            --azul-escuro: #0D2D5E;
+            --laranja: #FF7F30;
+            --laranja-claro: #FFA366;
+            --branco: #FFFFFF;
+            --cinza-claro: #F5F5F5;
+            --cinza: #E0E0E0;
+            --cinza-escuro: #616161;
+            --verde: #4CAF50;
+            --vermelho: #F44336;
+            --amarelo: #FFC107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--cinza-claro);
+            height: 100vh;
+        }
+
+        /* Tela de Login */
+        .login-container {
+            background-color: var(--branco);
+            width: 400px;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .login-header h1 {
+            color: var(--azul-principal);
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: var(--cinza-escuro);
+        }
+
+        .logo {
+            width: 100px;
+            margin: 0 auto 15px;
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--azul-principal);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--cinza);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--azul-claro);
+            box-shadow: 0 0 0 2px rgba(74, 124, 223, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--laranja);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--laranja-claro);
+        }
+
+        .error-message {
+            color: var(--vermelho);
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        /* Dashboard */
+        .dashboard-container {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            background-color: var(--branco);
+        }
+
+        .dashboard-header {
+            background-color: var(--azul-principal);
+            color: var(--branco);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info span {
+            margin-right: 15px;
+        }
+
+        .logout-btn {
+            background-color: var(--laranja);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .dashboard-content {
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+        }
+
+        .dashboard-title {
+            color: var(--azul-principal);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-link {
+            color: var(--laranja);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .admin-link i {
+            margin-right: 5px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            background-color: var(--cinza-claro);
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-item label {
+            margin-bottom: 5px;
+            color: var(--azul-principal);
+            font-weight: 500;
+        }
+
+        .filter-item select, .filter-item input {
+            padding: 8px;
+            border: 1px solid var(--cinza);
+            border-radius: 5px;
+        }
+
+        .table-container {
+            overflow: auto;
+        }
+
+        .demands-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .demands-table th, .demands-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--cinza);
+        }
+
+        .demands-table th {
+            background-color: var(--azul-claro);
+            color: var(--branco);
+            position: sticky;
+            top: 0;
+        }
+
+        .demands-table tr:nth-child(even) {
+            background-color: var(--cinza-claro);
+        }
+
+        .demands-table tr:hover {
+            background-color: rgba(74, 124, 223, 0.1);
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-block;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .status-aberta {
+            background-color: #FFECB3;
+            color: #7D6608;
+        }
+
+        .status-andamento {
+            background-color: #BBDEFB;
+            color: #0D47A1;
+        }
+
+        .status-concluida {
+            background-color: #C8E6C9;
+            color: #1B5E20;
+        }
+
+        .urgente {
+            color: #D32F2F;
+            font-weight: bold;
+        }
+
+        .btn-status {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .btn-aberta {
+            background-color: #FFECB3;
+            color: #7D6608;
+        }
+
+        .btn-andamento {
+            background-color: #BBDEFB;
+            color: #0D47A1;
+        }
+
+        .btn-concluida {
+            background-color: #C8E6C9;
+            color: #1B5E20;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* Modal para anexos */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--branco);
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        /* Painel Admin */
+        .admin-panel {
+            padding: 20px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--branco);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: var(--azul-principal);
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--laranja);
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background-color: var(--branco);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-btn {
+            background-color: var(--azul-principal);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn i {
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                width: 90%;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-header">
+            <h1>Sistema de Demandas</h1>
+            <p>Humanização - Acesso Restrito</p>
+        </div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" required placeholder="Seu e-mail">
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" required placeholder="Sua senha">
+            </div>
+            <button type="submit" class="btn">Entrar</button>
+            <div class="error-message" id="errorMessage">E-mail ou senha incorretos!</div>
+        </form>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-container" id="dashboardContainer">
+        <header class="dashboard-header">
+            <h2>Sistema de Gestão de Demandas - Humanização</h2>
+            <div class="user-info">
+                <span id="userEmailDisplay">user@example.com</span>
+                <button class="logout-btn" id="logoutBtn">Sair</button>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <h2 class="dashboard-title">
+                Demandas em Andamento
+                <a href="#" class="admin-link" id="adminLink"><i class="fas fa-chart-line"></i> Painel Administrativo</a>
+            </h2>
+            
+            <div class="filters">
+                <div class="filter-item">
+                    <label for="filterStatus">Status</label>
+                    <select id="filterStatus">
+                        <option value="todos">Todos</option>
+                        <option value="aberta">Aberta</option>
+                        <option value="andamento">Em Andamento</option>
+                        <option value="concluida">Concluída</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filterAtendente">Atendente</label>
+                    <select id="filterAtendente">
+                        <option value="todos">Todos</option>
+                        <option value="maria">Maria</option>
+                        <option value="joana">Joana</option>
+                        <option value="carla">Carla</option>
+                        <option value="sandra">Sandra</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filterUrgencia">Urgência</label>
+                    <select id="filterUrgencia">
+                        <option value="todos">Todos</option>
+                        <option value="urgente">Urgente</option>
+                        <option value="normal">Normal</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filterData">Data</label>
+                    <input type="date" id="filterData">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="demands-table">
+                    <thead>
+                        <tr>
+                            <th>Data Recebimento</th>
+                            <th>Nome</th>
+                            <th>Data Nascimento</th>
+                            <th>Telefone</th>
+                            <th>Resumo Demanda</th>
+                            <th>Urgente</th>
+                            <th>Atendente</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="demandsTableBody">
+                        <!-- As demandas serão inseridas aqui via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Painel Administrativo -->
+    <div class="dashboard-container" id="adminPanel">
+        <header class="dashboard-header">
+            <h2>Painel Administrativo - Humanização</h2>
+            <div class="user-info">
+                <span id="adminEmailDisplay">admin@example.com</span>
+                <button class="logout-btn" id="adminLogoutBtn">Sair</button>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <button class="back-btn" id="backToDashboard"><i class="fas fa-arrow-left"></i> Voltar ao Dashboard</button>
+            
+            <h2 class="dashboard-title">Estatísticas e Relatórios</h2>
+            
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3>Total de Demandas</h3>
+                    <div class="stat-number" id="totalDemands">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Demandas Urgentes</h3>
+                    <div class="stat-number" id="urgentDemands">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Taxa de Conclusão</h3>
+                    <div class="stat-number" id="completionRate">0%</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Demandas este Mês</h3>
+                    <div class="stat-number" id="monthDemands">0</div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3>Demandas por Status</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Demandas por Atendente</h3>
+                    <canvas id="atendenteChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Evolução Mensal</h3>
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Urgências por Atendente</h3>
+                    <canvas id="urgencyChart"></canvas>
+                </div>
+            </div>
+
+            <h2 class="dashboard-title">Todas as Demandas</h2>
+            <div class="table-container">
+                <table class="demands-table">
+                    <thead>
+                        <tr>
+                            <th>Data Recebimento</th>
+                            <th>Nome</th>
+                            <th>Telefone</th>
+                            <th>Resumo Demanda</th>
+                            <th>Urgente</th>
+                            <th>Atendente</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        <!-- Todas as demandas para o admin -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Anexos -->
+    <div id="anexosModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Anexos da Demanda</h2>
+            <div id="anexosList">
+                <!-- Lista de anexos será inserida aqui -->
+            </div>
+            <div style="margin-top: 20px;">
+                <h3>Adicionar Anexo</h3>
+                <input type="file" id="novoAnexo">
+                <button class="btn" style="margin-top: 10px;" onclick="adicionarAnexo()">Enviar Anexo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados de exemplo (simulando uma planilha)
+        let demandasExemplo = [
+            {
+                id: 1,
+                dataRecebimento: '15/08/2023',
+                nome: 'João Silva',
+                dataNascimento: '10/05/1980',
+                telefone: '(11) 99999-9999',
+                resumo: 'Necessidade de acompanhamento psicológico',
+                urgente: 'Sim',
+                atendente: 'maria',
+                status: 'aberta',
+                anexos: ['documento1.pdf', 'foto.jpg']
+            },
+            {
+                id: 2,
+                dataRecebimento: '16/08/2023',
+                nome: 'Maria Santos',
+                dataNascimento: '22/11/1975',
+                telefone: '(11) 98888-8888',
+                resumo: 'Encaminhamento para assistência social',
+                urgente: 'Não',
+                atendente: 'joana',
+                status: 'andamento',
+                anexos: ['relatorio.pdf']
+            },
+            {
+                id: 3,
+                dataRecebimento: '17/08/2023',
+                nome: 'Pedro Costa',
+                dataNascimento: '03/04/1992',
+                telefone: '(11) 97777-7777',
+                resumo: 'Auxílio com documentação',
+                urgente: 'Sim',
+                atendente: 'carla',
+                status: 'concluida',
+                anexos: []
+            },
+            {
+                id: 4,
+                dataRecebimento: '18/08/2023',
+                nome: 'Ana Oliveira',
+                dataNascimento: '15/09/1988',
+                telefone: '(11) 96666-6666',
+                resumo: 'Orientação sobre benefícios',
+                urgente: 'Não',
+                atendente: 'sandra',
+                status: 'aberta',
+                anexos: ['beneficios.pdf']
+            }
+        ];
+
+        // Usuários válidos (em um sistema real, isso viria de um banco de dados)
+        const usuariosValidos = [
+            { email: 'maria@humanizacao.com', senha: 'senha123', nome: 'Maria', perfil: 'atendente' },
+            { email: 'joana@humanizacao.com', senha: 'senha123', nome: 'Joana', perfil: 'atendente' },
+            { email: 'carla@humanizacao.com', senha: 'senha123', nome: 'Carla', perfil: 'atendente' },
+            { email: 'sandra@humanizacao.com', senha: 'senha123', nome: 'Sandra', perfil: 'atendente' },
+            { email: 'admin@humanizacao.com', senha: 'admin123', nome: 'Administrador', perfil: 'admin' }
+        ];
+
+        // Elementos DOM
+        const loginContainer = document.getElementById('loginContainer');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        const adminPanel = document.getElementById('adminPanel');
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const userEmailDisplay = document.getElementById('userEmailDisplay');
+        const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+        const demandsTableBody = document.getElementById('demandsTableBody');
+        const adminTableBody = document.getElementById('adminTableBody');
+        const filterStatus = document.getElementById('filterStatus');
+        const filterAtendente = document.getElementById('filterAtendente');
+        const filterUrgencia = document.getElementById('filterUrgencia');
+        const filterData = document.getElementById('filterData');
+        const adminLink = document.getElementById('adminLink');
+        const backToDashboard = document.getElementById('backToDashboard');
+        const anexosModal = document.getElementById('anexosModal');
+        const anexosList = document.getElementById('anexosList');
+        const closeModal = document.querySelector('.close');
+
+        // Elementos de estatísticas
+        const totalDemands = document.getElementById('totalDemands');
+        const urgentDemands = document.getElementById('urgentDemands');
+        const completionRate = document.getElementById('completionRate');
+        const monthDemands = document.getElementById('monthDemands');
+
+        // Variáveis globais
+        let usuarioLogado = null;
+        let demandas = [];
+        let demandaSelecionada = null;
+        let statusChartInstance = null;
+        let atendenteChartInstance = null;
+        let monthlyChartInstance = null;
+        let urgencyChartInstance = null;
+
+        // Inicializar a aplicação
+        function init() {
+            // Verificar se há um usuário logado no localStorage
+            const usuarioSalvo = localStorage.getItem('usuarioLogado');
+            if (usuarioSalvo) {
+                usuarioLogado = JSON.parse(usuarioSalvo);
+                if (usuarioLogado.perfil === 'admin') {
+                    mostrarAdminPanel();
+                } else {
+                    mostrarDashboard();
+                }
+            }
+
+            // Carregar demandas do localStorage ou usar as de exemplo
+            const demandasSalvas = localStorage.getItem('demandas');
+            if (demandasSalvas) {
+                demandas = JSON.parse(demandasSalvas);
+            } else {
+                demandas = demandasExemplo;
+                localStorage.setItem('demandas', JSON.stringify(demandas));
+            }
+
+            // Event Listeners
+            loginForm.addEventListener('submit', fazerLogin);
+            logoutBtn.addEventListener('click', fazerLogout);
+            adminLogoutBtn.addEventListener('click', fazerLogout);
+            filterStatus.addEventListener('change', filtrarDemandas);
+            filterAtendente.addEventListener('change', filtrarDemandas);
+            filterUrgencia.addEventListener('change', filtrarDemandas);
+            filterData.addEventListener('change', filtrarDemandas);
+            adminLink.addEventListener('click', mostrarAdminPanel);
+            backToDashboard.addEventListener('click', mostrarDashboard);
+            closeModal.addEventListener('click', () => anexosModal.style.display = 'none');
+            
+            // Fechar modal clicando fora dele
+            window.addEventListener('click', (event) => {
+                if (event.target === anexosModal) {
+                    anexosModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Função de login
+        function fazerLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('password').value;
+            
+            // Verificar se o usuário é válido
+            const usuario = usuariosValidos.find(u => u.email === email && u.senha === senha);
+            
+            if (usuario) {
+                usuarioLogado = usuario;
+                // Salvar no localStorage
+                localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
+                
+                if (usuario.perfil === 'admin') {
+                    mostrarAdminPanel();
+                } else {
+                    mostrarDashboard();
+                }
+                
+                errorMessage.style.display = 'none';
+            } else {
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        // Função de logout
+        function fazerLogout() {
+            usuarioLogado = null;
+            localStorage.removeItem('usuarioLogado');
+            loginContainer.style.display = 'block';
+            dashboardContainer.style.display = 'none';
+            adminPanel.style.display = 'none';
+            loginForm.reset();
+        }
+
+        // Mostrar dashboard
+        function mostrarDashboard() {
+            userEmailDisplay.textContent = usuarioLogado.email;
+            loginContainer.style.display = 'none';
+            dashboardContainer.style.display = 'block';
+            adminPanel.style.display = 'none';
+            carregarDemandas();
+        }
+
+        // Mostrar painel administrativo
+        function mostrarAdminPanel(e) {
+            if (e) e.preventDefault();
+            
+            if (usuarioLogado.perfil !== 'admin') {
+                alert('Acesso restrito para administradores!');
+                return;
+            }
+            
+            adminEmailDisplay.textContent = usuarioLogado.email;
+            loginContainer.style.display = 'none';
+            dashboardContainer.style.display = 'none';
+            adminPanel.style.display = 'block';
+            carregarDadosAdmin();
+        }
+
+        // Carregar demandas na tabela
+        function carregarDemandas() {
+            // Limpar tabela
+            demandsTableBody.innerHTML = '';
+            
+            // Filtrar demandas conforme permissões do usuário
+            let demandasFiltradas = [...demandas];
+            
+            // Se o usuário não for admin, mostrar apenas suas demandas
+            if (usuarioLogado.perfil !== 'admin') {
+                demandasFiltradas = demandasFiltradas.filter(d => d.atendente === usuarioLogado.nome.toLowerCase());
+            }
+            
+            // Aplicar filtros selecionados
+            demandasFiltradas = aplicarFiltros(demandasFiltradas);
+            
+            // Preencher a tabela
+            demandasFiltradas.forEach(demanda => {
+                const row = document.createElement('tr');
+                
+                // Formatar status
+                let statusClass = '';
+                let statusText = '';
+                switch(demanda.status) {
+                    case 'aberta':
+                        statusClass = 'status-aberta';
+                        statusText = 'Aberta';
+                        break;
+                    case 'andamento':
+                        statusClass = 'status-andamento';
+                        statusText = 'Em Andamento';
+                        break;
+                    case 'concluida':
+                        statusClass = 'status-concluida';
+                        statusText = 'Concluída';
+                        break;
+                }
+                
+                // Formatar urgência
+                const urgenteClass = demanda.urgente === 'Sim' ? 'urgente' : '';
+                
+                row.innerHTML = `
+                    <td>${demanda.dataRecebimento}</td>
+                    <td>${demanda.nome}</td>
+                    <td>${demanda.dataNascimento}</td>
+                    <td>${demanda.telefone}</td>
+                    <td>${demanda.resumo}</td>
+                    <td class="${urgenteClass}">${demanda.urgente}</td>
+                    <td>${formatarNomeAtendente(demanda.atendente)}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td class="action-buttons">
+                        ${usuarioLogado.perfil === 'admin' || usuarioLogado.nome.toLowerCase() === demanda.atendente ? `
+                        <button class="btn-status btn-aberta" onclick="alterarStatus(${demanda.id}, 'aberta')">A</button>
+                        <button class="btn-status btn-andamento" onclick="alterarStatus(${demanda.id}, 'andamento')">EA</button>
+                        <button class="btn-status btn-concluida" onclick="alterarStatus(${demanda.id}, 'concluida')">C</button>
+                        ` : ''}
+                        <button class="btn-status" onclick="verAnexos(${demanda.id})"><i class="fas fa-paperclip"></i></button>
+                    </td>
+                `;
+                
+                demandsTableBody.appendChild(row);
+            });
+        }
+
+        // Carregar dados no painel administrativo
+        function carregarDadosAdmin() {
+            // Atualizar estatísticas
+            atualizarEstatisticas();
+            
+            // Carregar gráficos
+            carregarGraficos();
+            
+            // Preencher tabela com todas as demandas
+            adminTableBody.innerHTML = '';
+            demandas.forEach(demanda => {
+                const row = document.createElement('tr');
+                
+                // Formatar status
+                let statusClass = '';
+                let statusText = '';
+                switch(demanda.status) {
+                    case 'aberta':
+                        statusClass = 'status-aberta';
+                        statusText = 'Aberta';
+                        break;
+                    case 'andamento':
+                        statusClass = 'status-andamento';
+                        statusText = 'Em Andamento';
+                        break;
+                    case 'concluida':
+                        statusClass = 'status-concluida';
+                        statusText = 'Concluída';
+                        break;
+                }
+                
+                // Formatar urgência
+                const urgenteClass = demanda.urgente === 'Sim' ? 'urgente' : '';
+                
+                row.innerHTML = `
+                    <td>${demanda.dataRecebimento}</td>
+                    <td>${demanda.nome}</td>
+                    <td>${demanda.telefone}</td>
+                    <td>${demanda.resumo}</td>
+                    <td class="${urgenteClass}">${demanda.urgente}</td>
+                    <td>${formatarNomeAtendente(demanda.atendente)}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                `;
+                
+                adminTableBody.appendChild(row);
+            });
+        }
+
+        // Atualizar estatísticas no painel admin
+        function atualizarEstatisticas() {
+            const total = demandas.length;
+            const urgentes = demandas.filter(d => d.urgente === 'Sim').length;
+            const concluidas = demandas.filter(d => d.status === 'concluida').length;
+            const taxaConclusao = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+            
+            // Demandas deste mês (simulação)
+            const desteMes = demandas.filter(d => {
+                const data = d.dataRecebimento.split('/');
+                return data[1] === '08' && data[2] === '2023'; // Agosto de 2023
+            }).length;
+            
+            totalDemands.textContent = total;
+            urgentDemands.textContent = urgentes;
+            completionRate.textContent = `${taxaConclusao}%`;
+            monthDemands.textContent = desteMes;
+        }
+
+        // Carregar gráficos no painel admin
+        function carregarGraficos() {
+            // Destruir gráficos existentes para evitar duplicação
+            if (statusChartInstance) statusChartInstance.destroy();
+            if (atendenteChartInstance) atendenteChartInstance.destroy();
+            if (monthlyChartInstance) monthlyChartInstance.destroy();
+            if (urgencyChartInstance) urgencyChartInstance.destroy();
+            
+            // Dados para os gráficos (simulados)
+            const statusData = {
+                labels: ['Abertas', 'Em Andamento', 'Concluídas'],
+                datasets: [{
+                    data: [
+                        demandas.filter(d => d.status === 'aberta').length,
+                        demandas.filter(d => d.status === 'andamento').length,
+                        demandas.filter(d => d.status === 'concluida').length
+                    ],
+                    backgroundColor: ['#FFECB3', '#BBDEFB', '#C8E6C9']
+                }]
+            };
+            
+            const atendentesData = {
+                labels: ['Maria', 'Joana', 'Carla', 'Sandra'],
+                datasets: [{
+                    label: 'Demandas por Atendente',
+                    data: [
+                        demandas.filter(d => d.atendente === 'maria').length,
+                        demandas.filter(d => d.atendente === 'joana').length,
+                        demandas.filter(d => d.atendente === 'carla').length,
+                        demandas.filter(d => d.atendente === 'sandra').length
+                    ],
+                    backgroundColor: '#4A7CDF'
+                }]
+            };
+            
+            const monthlyData = {
+                labels: ['Maio', 'Junho', 'Julho', 'Agosto'],
+                datasets: [{
+                    label: 'Demandas por Mês',
+                    data: [12, 19, 15, demandas.length],
+                    borderColor: '#FF7F30',
+                    tension: 0.1,
+                    fill: false
+                }]
+            };
+            
+            const urgencyData = {
+                labels: ['Maria', 'Joana', 'Carla', 'Sandra'],
+                datasets: [
+                    {
+                        label: 'Urgentes',
+                        data: [
+                            demandas.filter(d => d.atendente === 'maria' && d.urgente === 'Sim').length,
+                            demandas.filter(d => d.atendente === 'joana' && d.urgente === 'Sim').length,
+                            demandas.filter(d => d.atendente === 'carla' && d.urgente === 'Sim').length,
+                            demandas.filter(d => d.atendente === 'sandra' && d.urgente === 'Sim').length
+                        ],
+                        backgroundColor: '#F44336'
+                    },
+                    {
+                        label: 'Normais',
+                        data: [
+                            demandas.filter(d => d.atendente === 'maria' && d.urgente === 'Não').length,
+                            demandas.filter(d => d.atendente === 'joana' && d.urgente === 'Não').length,
+                            demandas.filter(d => d.atendente === 'carla' && d.urgente === 'Não').length,
+                            demandas.filter(d => d.atendente === 'sandra' && d.urgente === 'Não').length
+                        ],
+                        backgroundColor: '#4CAF50'
+                    }
+                ]
+            };
+            
+            // Criar os gráficos
+            statusChartInstance = new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: statusData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            atendenteChartInstance = new Chart(document.getElementById('atendenteChart'), {
+                type: 'bar',
+                data: atendentesData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            monthlyChartInstance = new Chart(document.getElementById('monthlyChart'), {
+                type: 'line',
+                data: monthlyData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            urgencyChartInstance = new Chart(document.getElementById('urgencyChart'), {
+                type: 'bar',
+                data: urgencyData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Formatar nome do atendente para exibição
+        function formatarNomeAtendente(atendente) {
+            switch(atendente) {
+                case 'maria': return 'Maria';
+                case 'joana': return 'Joana';
+                case 'carla': return 'Carla';
+                case 'sandra': return 'Sandra';
+                default: return atendente;
+            }
+        }
+
+        // Aplicar filtros às demandas
+        function aplicarFiltros(demandas) {
+            let filtradas = [...demandas];
+            
+            // Filtro por status
+            if (filterStatus.value !== 'todos') {
+                filtradas = filtradas.filter(d => d.status === filterStatus.value);
+            }
+            
+            // Filtro por atendente
+            if (filterAtendente.value !== 'todos') {
+                filtradas = filtradas.filter(d => d.atendente === filterAtendente.value);
+            }
+            
+            // Filtro por urgência
+            if (filterUrgencia.value !== 'todos') {
+                filtradas = filtradas.filter(d => 
+                    (filterUrgencia.value === 'urgente' && d.urgente === 'Sim') ||
+                    (filterUrgencia.value === 'normal' && d.urgente === 'Não')
+                );
+            }
+            
+            // Filtro por data (simplificado)
+            if (filterData.value) {
+                // Em um sistema real, aqui seria feita a comparação de datas
+                // Esta é uma implementação simplificada para demonstração
+                filtradas = filtradas.filter(d => d.dataRecebimento.includes('08')); // Filtra agosto
+            }
+            
+            return filtradas;
+        }
+
+        // Filtrar demandas quando os filtros mudam
+        function filtrarDemandas() {
+            carregarDemandas();
+        }
+
+        // Alterar status de uma demanda
+        function alterarStatus(id, novoStatus) {
+            const index = demandas.findIndex(d => d.id === id);
+            if (index !== -1) {
+                demandas[index].status = novoStatus;
+                localStorage.setItem('demandas', JSON.stringify(demandas));
+                
+                if (usuarioLogado.perfil === 'admin') {
+                    carregarDadosAdmin();
+                } else {
+                    carregarDemandas();
+                }
+            }
+        }
+
+        // Ver anexos de uma demanda
+        function verAnexos(id) {
+            demandaSelecionada = demandas.find(d => d.id === id);
+            if (demandaSelecionada) {
+                anexosList.innerHTML = '';
+                
+                if (demandaSelecionada.anexos.length === 0) {
+                    anexosList.innerHTML = '<p>Nenhum anexo encontrado.</p>';
+                } else {
+                    demandaSelecionada.anexos.forEach(anexo => {
+                        const item = document.createElement('div');
+                        item.innerHTML = `<p><i class="fas fa-file"></i> ${anexo} <button onclick="baixarAnexo('${anexo}')">Baixar</button></p>`;
+                        anexosList.appendChild(item);
+                    });
+                }
+                
+                anexosModal.style.display = 'block';
+            }
+        }
+
+        // Função para baixar anexo (simulada)
+        function baixarAnexo(nomeArquivo) {
+            alert(`Simulando download do arquivo: ${nomeArquivo}`);
+        }
+
+        // Função para adicionar anexo (simulada)
+        function adicionarAnexo() {
+            const fileInput = document.getElementById('novoAnexo');
+            if (fileInput.files.length > 0) {
+                const fileName = fileInput.files[0].name;
+                demandaSelecionada.anexos.push(fileName);
+                localStorage.setItem('demandas', JSON.stringify(demandas));
+                verAnexos(demandaSelecionada.id);
+                alert('Anexo adicionado com sucesso!');
+            } else {
+                alert('Selecione um arquivo para anexar.');
+            }
+        }
+
+        // Inicializar a aplicação quando o DOM estiver carregado
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
